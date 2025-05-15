@@ -7,13 +7,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5669F027-4B6
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contacts.Abstractions", "src\Contacts.Abstractions\Contacts.Abstractions.csproj", "{E2FBEA6C-ECEC-4352-9E13-C6575973053D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contacts.Data", "src\Contacts.Data\Contacts.Data.csproj", "{40C8F0E8-E289-445E-B331-2D3819F158FC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contacts.DataAccess", "src\Contacts.DataAccess\Contacts.DataAccess.csproj", "{40C8F0E8-E289-445E-B331-2D3819F158FC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contacts.Domain", "src\Contacts.Domain\Contacts.Domain.csproj", "{BCB303A2-E445-4C57-A041-D34DA6D383A2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contacts.Api", "src\Contacts.Api\Contacts.Api.csproj", "{64C59772-B75D-4499-83D5-2D4A39525E27}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contacts.Contracts", "src\Contacts.Contracts\Contacts.Contracts.csproj", "{CFE22187-F085-4D15-9EA8-8BBE3600EBE2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{FB06BFCA-8B3D-4820-81E1-C952F6DF7B7B}"
+	ProjectSection(SolutionItems) = preProject
+		docker-compose.yml = docker-compose.yml
+		Directory.Packages.props = Directory.Packages.props
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contacts.Application", "src\Contacts.Application\Contacts.Application.csproj", "{EDF6736B-0F71-4B16-9D49-F5A4BDD2777F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +52,10 @@ Global
 		{CFE22187-F085-4D15-9EA8-8BBE3600EBE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CFE22187-F085-4D15-9EA8-8BBE3600EBE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CFE22187-F085-4D15-9EA8-8BBE3600EBE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDF6736B-0F71-4B16-9D49-F5A4BDD2777F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDF6736B-0F71-4B16-9D49-F5A4BDD2777F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDF6736B-0F71-4B16-9D49-F5A4BDD2777F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDF6736B-0F71-4B16-9D49-F5A4BDD2777F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E2FBEA6C-ECEC-4352-9E13-C6575973053D} = {5669F027-4B64-416F-99D3-58430F3DD8D0}
@@ -51,5 +63,6 @@ Global
 		{BCB303A2-E445-4C57-A041-D34DA6D383A2} = {5669F027-4B64-416F-99D3-58430F3DD8D0}
 		{64C59772-B75D-4499-83D5-2D4A39525E27} = {5669F027-4B64-416F-99D3-58430F3DD8D0}
 		{CFE22187-F085-4D15-9EA8-8BBE3600EBE2} = {5669F027-4B64-416F-99D3-58430F3DD8D0}
+		{EDF6736B-0F71-4B16-9D49-F5A4BDD2777F} = {5669F027-4B64-416F-99D3-58430F3DD8D0}
 	EndGlobalSection
 EndGlobal
