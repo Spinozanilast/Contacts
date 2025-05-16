@@ -1,5 +1,5 @@
 services:
-  contracts-postgres:
+  contacts-postgres:
     image: postgres
     restart: always
     environment:
@@ -9,7 +9,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - contracts_data:/var/lib/postgresql/data
+      - contacts_data:/var/lib/postgresql/data
   #  pgadmin:
   #    container_name: pgadmin_container
   #    image: dpage/pgadmin4
@@ -24,19 +24,32 @@ services:
   #    ports:
   #      - ${PGADMIN_PORT:-5050}:80
   #    restart: unless-stopped
-  contracts-api:
+  contacts-api:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=${ASPNETCORE_URLS}
       - ConnectionStrings__DefaultConnection=${CONTRACTS_CONNECTION}
     build:
       dockerfile: ./src/Contacts.Api/Dockerfile
-    image: contracts-api
-    container_name: contracts-api-local
+    image: contacts-api
+    container_name: contacts-api-local
     ports:
       - "5171:80"
     depends_on:
-      - contracts-postgres
+      - contacts-postgres
+  web-client:
+    image: nginx:alpine
+    build:
+      context: ./src/web-app-vanilla/
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
 
 volumes:
-  contracts_data:
+  contacts_data:
