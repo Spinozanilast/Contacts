@@ -4,5 +4,5 @@ namespace Contacts.Abstractions.Commands;
 
 public interface ISaveContactCommand
 {
-    Task ExecuteAsync(SaveContactDto dto, CancellationToken cancellationToken);
+    Task<Guid> ExecuteAsync(SaveContactDto dto, CancellationToken cancellationToken);
 }

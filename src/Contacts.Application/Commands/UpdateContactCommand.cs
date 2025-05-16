@@ -1,4 +1,5 @@
 using Contacts.Abstractions.Commands;
+using Contacts.Application.Exceptions;
 using Contacts.Application.Helpers;
 using Contacts.Contracts.Commands;
 using Contacts.DataAccess;
@@ -18,15 +19,20 @@ public class UpdateContactCommand : IUpdateContactCommand
         _db = db;
     }
 
-    public async Task ExecuteAsync(UpdateContactDto dto, CancellationToken cancellationToken)
+    public async Task ExecuteAsync(Guid contactId, UpdateContactDto dto, CancellationToken cancellationToken)
     {
-        await _db.Contacts
-            .Where(c => c.Id == dto.Id)
+        var affectedRows = await _db.Contacts
+            .Where(c => c.Id == contactId)
             .ExecuteUpdateAsync(setter => setter
                 .SetIfNotNull(c => c.Name, dto.Name)
                 .SetIfNotNull(c => c.MobilePhone, dto.MobilePhone)
                 .SetIfNotNull(c => c.JobTitle, dto.JobTitle)
                 .SetIfNotNull(c => c.BirthDate, dto.BirthDate)
                 .SetProperty(c => c.LastModified, DateTimeOffset.UtcNow), cancellationToken);
+
+        if (affectedRows == 0)
+        {
+            throw new NotFoundException($"Contact with ID {contactId} not found.");
+        }
     }
 }

@@ -17,13 +17,15 @@ public class SaveContactCommand : ISaveContactCommand
         _db = db;
     }
 
-    public async Task ExecuteAsync(SaveContactDto dto, CancellationToken cancellationToken)
+    public async Task<Guid> ExecuteAsync(SaveContactDto dto, CancellationToken cancellationToken)
     {
+        var newContactId = Guid.CreateVersion7();
+
         await _db
             .Contacts
             .AddAsync(new Contact
             {
-                Id = Guid.CreateVersion7(),
+                Id = newContactId,
                 Name = dto.Name,
                 MobilePhone = dto.MobilePhone,
                 BirthDate = dto.BirthDate,
@@ -32,5 +34,7 @@ public class SaveContactCommand : ISaveContactCommand
             }, cancellationToken);
 
         await _db.SaveChangesAsync(cancellationToken);
+
+        return newContactId;
     }
 }

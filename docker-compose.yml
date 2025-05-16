@@ -28,7 +28,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ASPNETCORE_URLS=${ASPNETCORE_URLS}
-      - ConnectionStrings__PostgresConnection=${CONTRACTS_CONNECTION}
+      - ConnectionStrings__DefaultConnection=${CONTRACTS_CONNECTION}
     build:
       dockerfile: ./src/Contacts.Api/Dockerfile
     image: contracts-api

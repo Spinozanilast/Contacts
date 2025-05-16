@@ -1,4 +1,5 @@
 using Contacts.Abstractions.Commands;
+using Contacts.Application.Exceptions;
 using Contacts.Contracts.Commands;
 using Contacts.DataAccess;
 using Microsoft.EntityFrameworkCore;
@@ -19,8 +20,13 @@ public class DeleteContactCommand : IDeleteContactCommand
 
     public async Task ExecuteAsync(DeleteContactDto dto, CancellationToken cancellationToken)
     {
-        await _db
+        var affectedRows = await _db
             .Contacts
             .Where(c => c.Id == dto.Id).ExecuteDeleteAsync(cancellationToken);
+
+        if (affectedRows == 0)
+        {
+            throw new NotFoundException($"Contact with ID {dto.Id} not found.");
+        }
     }
 }

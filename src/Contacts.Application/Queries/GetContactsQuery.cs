@@ -77,9 +77,4 @@ public class GetContactsQuery : IGetContactsQuery
             resultCount,
             totalCount);
     }
-
-    public Task<PagedContactsResponse> GetContactsAsync(CancellationToken cancellationToken)
-    {
-        throw new NotImplementedException();
-    }
 }
