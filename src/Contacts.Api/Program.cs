@@ -33,6 +33,20 @@ builder.Services.AddApiVersioning(options =>
         options.SubstituteApiVersionInUrl = true;
     });
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAllOrigins",
+            policyBuilder => policyBuilder.AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowAnyOrigin()
+                //.AllowCredentials()
+                .SetIsOriginAllowed(_ => true)
+        );
+    });
+}
+
 var app = builder.Build();
 
 var apiVersionSet = app.NewApiVersionSet()
@@ -52,6 +66,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
     app.ApplyMigrations();
+    app.UseCors("AllowAllOrigins");
 }
 
 app.UseHttpsRedirection();
