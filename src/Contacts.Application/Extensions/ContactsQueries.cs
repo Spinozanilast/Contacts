@@ -10,7 +10,8 @@ public static class ContactsQueries
     {
         services
             .AddScoped<IGetContactsQuery, GetContactsQuery>()
-            .AddScoped<IGetContactByIdQuery, GetContactByIdQuery>();
+            .AddScoped<IGetContactByIdQuery, GetContactByIdQuery>()
+            .AddScoped<IGetContactsJobsQuery, GetContactsJobsQuery>();
 
         return services;
     }

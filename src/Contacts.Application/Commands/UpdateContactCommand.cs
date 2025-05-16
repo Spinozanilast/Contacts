@@ -1,6 +1,5 @@
 using Contacts.Abstractions.Commands;
 using Contacts.Application.Exceptions;
-using Contacts.Application.Helpers;
 using Contacts.Contracts.Commands;
 using Contacts.DataAccess;
 using Microsoft.EntityFrameworkCore;
@@ -24,10 +23,10 @@ public class UpdateContactCommand : IUpdateContactCommand
         var affectedRows = await _db.Contacts
             .Where(c => c.Id == contactId)
             .ExecuteUpdateAsync(setter => setter
-                .SetIfNotNull(c => c.Name, dto.Name)
-                .SetIfNotNull(c => c.MobilePhone, dto.MobilePhone)
-                .SetIfNotNull(c => c.JobTitle, dto.JobTitle)
-                .SetIfNotNull(c => c.BirthDate, dto.BirthDate)
+                .SetProperty(c => c.Name, dto.Name)
+                .SetProperty(c => c.MobilePhone, dto.MobilePhone)
+                .SetProperty(c => c.BirthDate, dto.BirthDate)
+                .SetProperty(c => c.JobTitle, dto.JobTitle)
                 .SetProperty(c => c.LastModified, DateTimeOffset.UtcNow), cancellationToken);
 
         if (affectedRows == 0)

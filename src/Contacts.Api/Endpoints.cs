@@ -12,16 +12,23 @@ public static class Endpoints
 {
     public static RouteGroupBuilder MapContactsEndpoints(this RouteGroupBuilder group)
     {
-        group.MapGet("", async Task<Ok<PagedContactsResponse>> (
-                    [AsParameters] ContactsQueryParams queryParams,
-                    [FromServices] IGetContactsQuery query,
-                    CancellationToken cancellationToken) =>
-                TypedResults
-                    .Ok(await query.GetContactsAsync(
-                        new GetContactsRequest(queryParams.PageNumber, queryParams.PageSize),
-                        cancellationToken)))
+        group.MapGet("", async Task<Ok<ContactsResponse>> (
+                [AsParameters] GetContactsParams queryParams,
+                [FromServices] IGetContactsQuery contactsQuery,
+                [FromServices] IGetContactsJobsQuery jobsQuery,
+                CancellationToken cancellationToken) =>
+            {
+                var pagedContacts = await contactsQuery.GetContactsAsync(
+                    new GetContactsParams(queryParams.PageNumber, queryParams.PageSize, queryParams.NameSearch,
+                        queryParams.JobTitleSearch),
+                    cancellationToken);
+
+                var jobs = await jobsQuery.GetContactsJobsAsync(queryParams.NameSearch, cancellationToken);
+
+                return TypedResults.Ok(new ContactsResponse(pagedContacts, jobs));
+            })
             .WithName("GetContacts")
-            .Produces<PagedContactsResponse>();
+            .Produces<ContactsResponse>();
 
         group.MapGet("/{id:guid}", async Task<Results<Ok<GetContactDto>, NotFound>> (
                 Guid id,
@@ -94,7 +101,3 @@ public static class Endpoints
         return group;
     }
 }
-
-public record ContactsQueryParams(
-    int PageNumber = 1,
-    int PageSize = 10);

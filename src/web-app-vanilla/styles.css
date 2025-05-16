@@ -126,6 +126,8 @@
   /* Search container */
   .search-container {
     margin-bottom: 1.5rem;
+    gap: 2em;
+    display: flex;
   }
   
   #search-input {
@@ -265,6 +267,14 @@
   .delete-modal-content {
     max-width: 400px;
   }
+
+  .search-container select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background-color: var(--background-white);
+    min-width: 200px;
+}
   
   @keyframes modalFadeIn {
     from {

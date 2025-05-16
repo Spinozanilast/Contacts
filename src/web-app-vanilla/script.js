@@ -4,7 +4,7 @@ class ContactAPI {
     }
 
     async _handleResponse(response) {
-        if (!response.ok) {
+        if (response.status >= 400) {
             let errorMessage = `Error: ${response.status} ${response.statusText}`
             try {
                 const errorData = await response.json()
@@ -20,15 +20,25 @@ class ContactAPI {
             throw new Error(errorMessage)
         }
 
-        if (response.status === 204) {
-            return null
+        //let's just do nothing on contact creation
+        if (response.status === 204 || response.status === 201) {
+            return null;
         }
 
         return response.json()
     }
 
-    async getContacts(pageNumber = 1, pageSize = 10) {
-        const response = await fetch(`${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`)
+    async getContacts(pageNumber = 1, pageSize = 10, nameSearch = "", jobTitleSearch = "") {
+        let pagedUrl = `${this.baseUrl}?pageNumber=${pageNumber}&pageSize=${pageSize}`
+
+        if (nameSearch) {
+            pagedUrl += `&nameSearch=${encodeURIComponent(nameSearch)}`
+        }
+        if (jobTitleSearch) {
+            pagedUrl += `&jobTitleSearch=${encodeURIComponent(jobTitleSearch)}`
+        }
+
+        const response = await fetch(pagedUrl)
         return this._handleResponse(response)
     }
 
@@ -45,15 +55,6 @@ class ContactAPI {
             },
             body: JSON.stringify(contactData),
         })
-
-        if (response.status === 201) {
-            const location = response.headers.get("Location")
-            if (location) {
-                const id = location.split("/").pop()
-                return { id }
-            }
-        }
-
         return this._handleResponse(response)
     }
 
@@ -76,25 +77,6 @@ class ContactAPI {
 
         return this._handleResponse(response)
     }
-
-    async searchContacts(query, pageNumber = 1, pageSize = 10) {
-        const response = await this.getContacts(pageNumber, pageSize)
-
-        if (!query) return response
-
-        const lowerQuery = query.toLowerCase()
-
-        if (response && response.items) {
-            response.items = response.items.filter(
-                (contact) =>
-                    contact.name.toLowerCase().includes(lowerQuery) ||
-                    contact.mobilePhone.toLowerCase().includes(lowerQuery) ||
-                    (contact.jobTitle && contact.jobTitle.toLowerCase().includes(lowerQuery)),
-            )
-        }
-
-        return response
-    }
 }
 
 class ContactManager {
@@ -105,15 +87,24 @@ class ContactManager {
         this.currentPage = 1
         this.pageSize = 10
         this.totalPages = 1
+        this.nameSearch = "";
+        this.jobTitleSearch = "";
         this.initElements()
         this.attachEventListeners()
         this.loadContacts()
+        this.DEFAULT_DELAY = 300;
     }
+
+    static get DEFAULT_SEARCH_DELAY() {
+        return 300;
+    }
+
 
     initElements() {
         // Main elements
         this.contactsList = document.getElementById("contacts-list")
         this.searchInput = document.getElementById("search-input")
+        this.jobSelect = document.getElementById("job-select");
 
         // Pagination elements
         this.prevPageBtn = document.getElementById("prev-page-btn")
@@ -137,6 +128,7 @@ class ContactManager {
         // Error messages
         this.nameError = document.getElementById("name-error")
         this.phoneError = document.getElementById("phone-error")
+        this.birthdateError = document.getElementById("birthdate-error");
 
         // Buttons
         this.addContactBtn = document.getElementById("add-contact-btn")
@@ -180,8 +172,19 @@ class ContactManager {
         this.searchInput.addEventListener(
             "input",
             this.debounce(() => {
-                this.searchContacts(this.searchInput.value)
-            }, 300),
+                this.nameSearch = this.searchInput.value.trim()
+                this.currentPage = 1
+                this.loadContacts()
+            }, ContactManager.DEFAULT_SEARCH_DELAY),
+        )
+
+        this.jobSelect.addEventListener(
+            "change",
+            this.debounce(() => {
+                this.jobTitleSearch = this.jobSelect.value.trim()
+                this.currentPage = 1
+                this.loadContacts()
+            }, ContactManager.DEFAULT_SEARCH_DELAY)
         )
 
         this.prevPageBtn.addEventListener("click", () => {
@@ -200,6 +203,7 @@ class ContactManager {
 
         this.pageSizeSelect.addEventListener("change", () => {
             this.pageSize = Number.parseInt(this.pageSizeSelect.value)
+            this.currentPage = 1;
             this.loadContacts()
         })
     }
@@ -207,19 +211,39 @@ class ContactManager {
     async loadContacts() {
         try {
             this.contactsList.innerHTML = '<div class="loading-indicator">Loading contacts...</div>'
-            const response = await this.api.getContacts(this.currentPage, this.pageSize)
+            const response = await this.api.getContacts(
+                this.currentPage,
+                this.pageSize,
+                this.nameSearch,
+                this.jobTitleSearch)
 
-            console.log(response);
+            const currentJobSelection = this.jobTitleSearch;
 
-            this.totalPages = Math.ceil(response.totalCount / this.pageSize)
+            this.totalPages = Math.ceil(response.contacts.totalCount / this.pageSize)
             this.updatePaginationControls()
 
-            this.contacts = response.data || []
+            this.contacts = response.contacts.data || []
             this.renderContacts(this.contacts)
+            this.populateJobSelector(response.jobs || [])
+
+            this.jobSelect.value = currentJobSelection;
         } catch (error) {
             this.showToast(`Error loading contacts: ${error.message}`, "error")
             this.contactsList.innerHTML = '<div class="empty-state">Failed to load contacts. Please try again.</div>'
         }
+    }
+
+    populateJobSelector(jobs) {
+        const currentValue = this.jobSelect.value;
+
+        this.jobSelect.innerHTML = '<option value="">All Jobs</option>';
+        jobs.forEach(job => {
+            const option = document.createElement('option')
+            option.value = job
+            option.textContent = job
+            option.selected = (job === currentValue);
+            this.jobSelect.appendChild(option)
+        })
     }
 
     updatePaginationControls() {
@@ -243,7 +267,7 @@ class ContactManager {
                   <div class="contact-detail">${this.escapeHtml(contact.name)}</div>
                   <div class="contact-detail">${this.escapeHtml(contact.mobilePhone)}</div>
                   <div class="contact-detail hide-mobile">${this.escapeHtml(contact.jobTitle || "-")}</div>
-                  <div class="contact-detail hide-mobile">${this.formatDate(contact.birthdate)}</div>
+                  <div class="contact-detail hide-mobile">${this.formatDate(contact.birthDate)}</div>
                   <div class="contact-actions">
                       <button class="icon-btn edit-btn" data-id="${contact.id}" title="Edit">✏️</button>
                       <button class="icon-btn delete-btn" data-id="${contact.id}" title="Delete">🗑️</button>
@@ -276,7 +300,7 @@ class ContactManager {
             this.nameInput.value = contact.name
             this.phoneInput.value = contact.mobilePhone
             this.jobTitleInput.value = contact.jobTitle || ""
-            this.birthdateInput.value = contact.birthdate ? contact.birthdate.split("T")[0] : ""
+            this.birthdateInput.value = contact.birthDate ? contact.birthDate.split("T")[0] : ""
             this.contactIdInput.value = contact.id
             this.currentContactId = contact.id
             this.clearFormErrors()
@@ -293,7 +317,6 @@ class ContactManager {
 
     async handleFormSubmit(e) {
         e.preventDefault()
-
         if (!this.validateForm()) {
             return
         }
@@ -305,19 +328,27 @@ class ContactManager {
             birthdate: this.birthdateInput.value || null,
         }
 
+        let isActionPerformed = false;
+
         try {
             if (this.currentContactId) {
                 await this.api.updateContact(this.currentContactId, contactData)
                 this.showToast("Contact updated successfully", "success")
+                isActionPerformed = true;
             } else {
                 await this.api.createContact(contactData)
                 this.showToast("Contact added successfully", "success")
+                isActionPerformed = true;
             }
-
-            this.closeModal(this.contactModal)
-            this.loadContacts()
         } catch (error) {
             this.showToast(`Error saving contact: ${error.message}`, "error")
+            isActionPerformed = false;
+        }
+        finally {
+            if (!isActionPerformed) return;
+
+            this.closeModal(this.contactModal)
+            await this.loadContacts()
         }
     }
 
@@ -329,22 +360,6 @@ class ContactManager {
             this.loadContacts()
         } catch (error) {
             this.showToast(`Error deleting contact: ${error.message}`, "error")
-        }
-    }
-
-    async searchContacts(query) {
-        try {
-            this.contactsList.innerHTML = '<div class="loading-indicator">Searching...</div>'
-            const response = await this.api.searchContacts(query, this.currentPage, this.pageSize)
-            if (response.totalCount !== undefined) {
-                this.totalPages = Math.ceil(response.totalCount / this.pageSize)
-                this.updatePaginationControls()
-            }
-
-            this.contacts = response.items || []
-            this.renderContacts(this.contacts)
-        } catch (error) {
-            this.showToast(`Error searching contacts: ${error.message}`, "error")
         }
     }
 
@@ -366,12 +381,23 @@ class ContactManager {
             isValid = false
         }
 
+        if (this.birthdateInput.value) {
+            const dateInput = this.birthdateInput.value;
+            const date = new Date(dateInput);
+            const currentDate = new Date();
+            if (date > currentDate) {
+                this.birthdateError.textContent = "Do you think it's funny, fellow kid?"
+                isValid = false;
+            }
+        }
+
         return isValid
     }
 
     clearFormErrors() {
         this.nameError.textContent = ""
         this.phoneError.textContent = ""
+        this.birthdateError.textContent = ""
     }
 
     isValidPhoneNumber(phone) {

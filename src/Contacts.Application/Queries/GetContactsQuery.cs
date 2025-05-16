@@ -19,44 +19,48 @@ public class GetContactsQuery : IGetContactsQuery
     }
 
     public async Task<PagedContactsResponse> GetContactsAsync(
-        GetContactsRequest request,
+        GetContactsParams @params,
         CancellationToken cancellationToken)
     {
-        ValidateRequest(request);
+        ValidateRequest(@params);
 
         var query = _db.Contacts.AsNoTracking().AsQueryable();
 
+        ApplyFilters(ref query, @params);
         var totalCount = await query.CountAsync(cancellationToken);
 
-        var results = await GetPagedResults(query, request, cancellationToken);
+        var results = await GetPagedResults(query, @params, cancellationToken);
 
-        LogExecution(request, results.Length, totalCount);
+        LogExecution(@params, results.Length, totalCount);
 
         return new PagedContactsResponse(
             results,
             totalCount,
-            request.PageNumber,
-            request.PageSize);
+            @params.PageNumber,
+            @params.PageSize);
     }
 
-    private void ValidateRequest(GetContactsRequest request)
+    private void LogExecution(GetContactsParams @params, int resultCount, int totalCount)
     {
-        if (request.PageNumber < 1)
-            throw new ArgumentException("Page number must be at least 1");
-
-        if (request.PageSize is < 1 or > 100)
-            throw new ArgumentException("Page size must be between 1 and 100");
+        _logger.LogInformation(
+            "Contacts query: Page {Page} (Size {Size}) with {Search} with job of {Job}  returned {Results} of {Total} matches",
+            @params.PageNumber,
+            @params.PageSize,
+            @params.NameSearch,
+            @params.JobTitleSearch,
+            resultCount,
+            totalCount);
     }
 
-    private async Task<GetContactDto[]> GetPagedResults(
+    private static async Task<GetContactDto[]> GetPagedResults(
         IQueryable<Contact> query,
-        GetContactsRequest request,
+        GetContactsParams @params,
         CancellationToken cancellationToken)
     {
         return await query
             .OrderBy(c => c.Name)
-            .Skip((request.PageNumber - 1) * request.PageSize)
-            .Take(request.PageSize)
+            .Skip((@params.PageNumber - 1) * @params.PageSize)
+            .Take(@params.PageSize)
             .Select(c => new GetContactDto(
                 c.Id,
                 c.Name,
@@ -68,13 +72,27 @@ public class GetContactsQuery : IGetContactsQuery
             .ToArrayAsync(cancellationToken);
     }
 
-    private void LogExecution(GetContactsRequest request, int resultCount, int totalCount)
+    private static void ValidateRequest(GetContactsParams @params)
     {
-        _logger.LogInformation(
-            "Contacts query: Page {Page} (Size {Size}) returned {Results} of {Total} matches",
-            request.PageNumber,
-            request.PageSize,
-            resultCount,
-            totalCount);
+        if (@params.PageNumber < 1)
+            throw new ArgumentException("Page number must be at least 1");
+
+        if (@params.PageSize is < 1 or > 100)
+            throw new ArgumentException("Page size must be between 1 and 100");
+    }
+
+    private static void ApplyFilters(ref IQueryable<Contact> query, GetContactsParams @params)
+    {
+        if (!string.IsNullOrEmpty(@params.NameSearch))
+        {
+            query = query.Where(c =>
+                EF.Functions.ILike(c.Name, $"%{@params.NameSearch}%"));
+        }
+
+        if (!string.IsNullOrEmpty(@params.JobTitleSearch))
+        {
+            query = query.Where(c =>
+                EF.Functions.ILike(c.JobTitle!, $"%{@params.JobTitleSearch}%"));
+        }
     }
 }

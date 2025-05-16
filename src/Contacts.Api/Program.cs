@@ -65,8 +65,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
-    app.ApplyMigrations();
+    await app.ApplyMigrations();
     app.UseCors("AllowAllOrigins");
+
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.SeedContacts();
 }
 
 app.UseHttpsRedirection();

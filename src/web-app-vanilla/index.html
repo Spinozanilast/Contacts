@@ -16,6 +16,9 @@
 
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search contacts...">
+            <select id="job-select">
+                <option value="">All Jobs</option>
+            </select>
         </div>
 
         <div class="pagination-controls">
@@ -78,6 +81,7 @@
                     <div class="form-group">
                         <label for="birthdate">Birthdate</label>
                         <input type="date" id="birthdate" name="birthdate">
+                        <div class="error-message" id="birthdate-error"></div>
                     </div>
                     <input type="hidden" id="contact-id">
                     <div class="form-actions">

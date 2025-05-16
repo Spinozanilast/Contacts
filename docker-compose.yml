@@ -37,19 +37,12 @@ services:
       - "5171:80"
     depends_on:
       - contacts-postgres
-  web-client:
-    image: nginx:alpine
-    build:
-      context: ./src/web-app-vanilla/
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    networks:
-      - default
-
-networks:
-  default:
-    driver: bridge
+#  web-client:
+#    image: nginx:alpine
+#    volumes:
+#      - ./src/web-app-vanilla:/usr/share/nginx/html
+#    ports:
+#      - "3500:80"
 
 volumes:
   contacts_data:
