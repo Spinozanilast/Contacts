@@ -58,6 +58,7 @@ export default function ContactsPage() {
       </div>
 
       <ContactTable
+        jobTitleSearch={jobTitleSearch}
         contacts={data?.contacts.data || []}
         totalCount={data?.contacts.totalCount || 0}
         page={page}

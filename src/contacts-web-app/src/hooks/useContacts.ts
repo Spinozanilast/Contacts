@@ -46,7 +46,10 @@ export function useContact(id: string) {
 export function useCreateContact() {
   return useMutation({
     mutationFn: async (contact: SaveContactDto) => {
-      const response = await api.post<void>("/contacts", contact);
+      const response = await api.post<void>(
+        "/contacts",
+        nullifyContactProps(contact),
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -62,8 +65,10 @@ export function useCreateContact() {
 export function useUpdateContact() {
   return useMutation({
     mutationFn: async (contact: UpdateContactDto) => {
-      const { id, ...data } = contact;
-      const response = await api.put<void>(`/contacts/${id}`, data);
+      const response = await api.put<void>(
+        `/contacts/${contact.id}`,
+        nullifyContactProps(contact),
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -90,4 +95,12 @@ export function useDeleteContact() {
       toast.error("Failed to delete contact");
     },
   });
+}
+
+function nullifyContactProps(dto: SaveContactDto) {
+  return {
+    ...dto,
+    jobTitle: dto.jobTitle === "" ? null : dto.jobTitle,
+    birthDate: dto.birthDate === "" ? null : dto.birthDate,
+  };
 }

@@ -37,12 +37,21 @@ services:
       - "5171:80"
     depends_on:
       - contacts-postgres
-#  web-client:
-#    image: nginx:alpine
-#    volumes:
-#      - ./src/web-app-vanilla:/usr/share/nginx/html
-#    ports:
-#      - "3500:80"
+  vanilla-web-client:
+    image: nginx:alpine
+    volumes:
+      - ./src/web-app-vanilla:/usr/share/nginx/html
+    ports:
+      - "3500:80"
+  react-web-client:
+    image: contacts-app
+    build:
+      context: ./src/contacts-web-app
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: development
+    ports:
+      - "8000:8000"
 
 volumes:
   contacts_data:

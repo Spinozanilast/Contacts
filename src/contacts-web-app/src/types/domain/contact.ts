@@ -30,8 +30,8 @@ export type ContactsResponse = {
 export type SaveContactDto = {
   name: string;
   mobilePhone: string;
-  jobTitle?: string;
-  birthDate?: string;
+  jobTitle?: string | null;
+  birthDate?: string | null;
 };
 
 export type DeleteContactDto = {

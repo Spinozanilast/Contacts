@@ -32,8 +32,7 @@ public static class DbContextSeeder
             .RuleFor(c => c.BirthDate, f => f.Date.BetweenDateOnly(
                 DateOnly.FromDateTime(DateTime.Today.AddYears(-65)),
                 DateOnly.FromDateTime(DateTime.Today.AddYears(-18))))
-            .RuleFor(c => c.Created, f => DateTimeOffset.UtcNow)
-            .RuleFor(c => c.LastModified, f => DateTimeOffset.UtcNow);
+            .RuleFor(c => c.Created, f => DateTimeOffset.UtcNow);
 
         return faker.Generate(count);
     }

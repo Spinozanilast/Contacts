@@ -37,6 +37,7 @@ import { formatDate, formatDateTime } from "@/lib/utils";
 const SEARCH_TIMEOUT = 500;
 
 interface ContactTableProps {
+  jobTitleSearch: string;
   contacts: Contact[];
   totalCount: number;
   page: number;
@@ -51,6 +52,7 @@ interface ContactTableProps {
 }
 
 export default function ContactTable({
+  jobTitleSearch,
   contacts,
   totalCount,
   page,
@@ -183,7 +185,10 @@ export default function ContactTable({
           onChange={(e) => setNameFilter(e.target.value)}
           className="max-w-sm"
         />
-        <Select value={jobTitleFilter} onValueChange={setJobTitleFilter}>
+        <Select
+          value={jobTitleFilter || jobTitleSearch}
+          onValueChange={setJobTitleFilter}
+        >
           <SelectTrigger className="max-w-sm">
             <SelectValue placeholder="Filter by job title" />
           </SelectTrigger>
