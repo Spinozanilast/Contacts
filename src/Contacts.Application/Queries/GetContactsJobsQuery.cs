@@ -26,7 +26,7 @@ public class GetContactsJobsQuery : IGetContactsJobsQuery
             contactsQuery = contactsQuery.Where(c => EF.Functions.Like(c.Name, $"%{nameSearch}%"));
         }
 
-        return await contactsQuery.Select(c => c.JobTitle)
+        return await contactsQuery.Select(c => c.JobTitle).Distinct()
             .ToArrayAsync(cancellationToken: cancellationToken);
     }
 }
