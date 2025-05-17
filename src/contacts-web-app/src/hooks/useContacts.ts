@@ -18,11 +18,16 @@ export function useContacts(params: ContactsParams) {
           pageNumber: params.pageNumber,
           pageSize: params.pageSize,
           nameSearch: params.nameSearch,
-          jobTitleSearch: params.jobTitleSearch,
+          jobTitleSearch:
+            params.jobTitleSearch == "all" || params.jobTitleSearch == ""
+              ? null
+              : params.jobTitleSearch,
         },
       });
       return response.data;
     },
+    keepPreviousData: true,
+    staleTime: 1 * 60 * 1000,
   });
 }
 
@@ -34,6 +39,7 @@ export function useContact(id: string) {
       return response.data;
     },
     enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

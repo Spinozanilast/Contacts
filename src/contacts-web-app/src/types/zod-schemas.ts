@@ -1,3 +1,4 @@
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { z } from "zod";
 
 export const ContactSchema = z.object({
@@ -5,7 +6,9 @@ export const ContactSchema = z.object({
   mobilePhone: z
     .string()
     .min(5, { message: "Phone number must be at least 5 characters" })
-    .regex(/^[+\d\s()-]+$/, { message: "Please enter a valid phone number" }),
+    .refine((value) => isValidPhoneNumber(value), {
+      message: "Invalid phone number format",
+    }),
   jobTitle: z.string().optional(),
   birthDate: z.string().optional(),
 });

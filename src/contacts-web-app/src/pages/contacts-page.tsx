@@ -17,7 +17,7 @@ export default function ContactsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [nameSearch, setNameSearch] = useState("");
-  const [jobTitleSearch, setJobTitleSearch] = useState("");
+  const [jobTitleSearch, setJobTitleSearch] = useState<string>("");
 
   const { data, isLoading, refetch } = useContacts({
     pageNumber: page,

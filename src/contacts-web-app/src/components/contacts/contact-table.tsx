@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -34,6 +34,8 @@ import {
 import type { Contact } from "@/types/domain/contact";
 import { formatDate, formatDateTime } from "@/lib/utils";
 
+const SEARCH_TIMEOUT = 500;
+
 interface ContactTableProps {
   contacts: Contact[];
   totalCount: number;
@@ -65,76 +67,85 @@ export default function ContactTable({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [nameFilter, setNameFilter] = useState("");
-  const [jobTitleFilter, setJobTitleFilter] = useState("");
+  const [jobTitleFilter, setJobTitleFilter] = useState<string | "all">("");
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       onSearch(nameFilter, jobTitleFilter);
-    }, 500);
+    }, SEARCH_TIMEOUT);
     return () => clearTimeout(timeoutId);
-  }, [nameFilter, jobTitleFilter, onSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nameFilter, jobTitleFilter]);
 
-  const columns: ColumnDef<Contact>[] = [
-    {
-      accessorKey: "name",
-      header: "Name",
-      cell: ({ row }) => (
-        <div className="font-medium">{row.getValue("name")}</div>
-      ),
-    },
-    {
-      accessorKey: "mobilePhone",
-      header: "Phone",
-      cell: ({ row }) => row.getValue("mobilePhone"),
-    },
-    {
-      accessorKey: "jobTitle",
-      header: "Job Title",
-      cell: ({ row }) => row.getValue("jobTitle") || "-",
-    },
-    {
-      accessorKey: "birthDate",
-      header: "Birth Date",
-      cell: ({ row }) => formatDate(row.getValue("birthDate")) || "-",
-    },
-    {
-      accessorKey: "created",
-      header: "Created",
-      cell: ({ row }) => formatDateTime(row.getValue("created")),
-    },
-    {
-      accessorKey: "lastModified",
-      header: "Last Modified",
-      cell: ({ row }) =>
-        row.getValue("lastModified")
-          ? formatDateTime(row.getValue("lastModified"))
-          : "-",
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        const contact = row.original;
-        return (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => onEdit(contact)}>
-              <Edit2Icon className="h-4 w-4" />
-              <span className="sr-only">Edit</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(contact)}
-              className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-            >
-              <Trash2Icon className="h-4 w-4" />
-              <span className="sr-only">Delete</span>
-            </Button>
-          </div>
-        );
+  const columns = useMemo<ColumnDef<Contact>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: "Name",
+        cell: ({ row }) => (
+          <div className="font-medium">{row.getValue("name")}</div>
+        ),
       },
-    },
-  ];
+      {
+        accessorKey: "mobilePhone",
+        header: "Phone",
+        cell: ({ row }) => row.getValue("mobilePhone"),
+      },
+      {
+        accessorKey: "jobTitle",
+        header: "Job Title",
+        cell: ({ row }) => row.getValue("jobTitle") || "-",
+      },
+      {
+        accessorKey: "birthDate",
+        header: "Birth Date",
+        cell: ({ row }) => formatDate(row.getValue("birthDate")) || "-",
+      },
+      {
+        accessorKey: "created",
+        header: "Created",
+        cell: ({ row }) => formatDateTime(row.getValue("created")),
+      },
+      {
+        accessorKey: "lastModified",
+        header: "Last Modified",
+        cell: ({ row }) =>
+          row.getValue("lastModified")
+            ? formatDateTime(row.getValue("lastModified"))
+            : "-",
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const contact = row.original;
+          return (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onEdit(contact)}
+              >
+                <Edit2Icon className="h-4 w-4" />
+                <span className="sr-only">Edit</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDelete(contact)}
+                className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+              >
+                <Trash2Icon className="h-4 w-4" />
+                <span className="sr-only">Delete</span>
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
   const table = useReactTable({
     data: contacts,
@@ -159,7 +170,6 @@ export default function ContactTable({
     pageCount: Math.ceil(totalCount / pageSize),
   });
 
-  // Set default sorting when component mounts
   useEffect(() => {
     setSorting([{ id: "created", desc: true }]);
   }, []);
@@ -228,7 +238,7 @@ export default function ContactTable({
             {isLoading ? (
               Array.from({ length: pageSize }).map((_, index) => (
                 <TableRow key={index}>
-                  {columns.map((column, colIndex) => (
+                  {columns.map((_, colIndex) => (
                     <TableCell key={colIndex}>
                       <div className="h-4 w-full animate-pulse rounded bg-muted"></div>
                     </TableCell>

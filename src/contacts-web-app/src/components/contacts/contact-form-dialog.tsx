@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import type { Contact } from "@/types/domain/contact";
 import { useCreateContact, useUpdateContact } from "@/hooks/useContacts";
 import { ContactSchema } from "@/types/zod-schemas";
+import { PhoneInput } from "@/components/ui/phone-number-input";
 
 type FormValues = z.infer<typeof ContactSchema>;
 
@@ -106,7 +107,7 @@ export default function ContactFormDialog({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="Vadim Budchanin" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,7 +120,7 @@ export default function ContactFormDialog({
                 <FormItem>
                   <FormLabel>Mobile Phone</FormLabel>
                   <FormControl>
-                    <Input placeholder="+1 (555) 123-4567" {...field} />
+                    <PhoneInput international defaultCountry="BY" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
